@@ -17,7 +17,7 @@ void initializeTime() {
   // }
 }
 
-bool isInitializedTime() {
+bool isReadyTime() {
   return sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET;
 }
 

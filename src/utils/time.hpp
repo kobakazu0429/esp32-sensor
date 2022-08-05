@@ -4,5 +4,5 @@
 #define SUMMER_TIME 0
 
 void initializeTime();
-bool isInitializedTime();
+bool isReadyTime();
 unsigned long getUnixTimeAsSeconds();

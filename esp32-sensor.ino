@@ -4,15 +4,11 @@
 #include <Mhz19.h>
 #include <WiFi.h>
 #include <Wire.h>
-// #include <esp_sntp.h>
-// #include <time.h>
 
 #include "debug.h"
 #include "env.h"
 #include "src/AE_SHT35/AE_SHT35.h"
 #include "src/utils/time.hpp"
-
-// #define JST 3600 * 9
 
 #define JSON String
 
@@ -82,18 +78,6 @@ String jsonLogBuilder(unsigned long unixtime, String msg) {
   return output;
 }
 
-// unsigned long getUnixTimeAsSeconds() {
-//   time_t now;
-//   struct tm timeinfo;
-//   if (!getLocalTime(&timeinfo)) {
-//     // Serial.println("Failed to obtain time");
-//     return 0;
-//   }
-//   time(&now);
-//   // debug(now);
-//   return now;
-// }
-
 void logger(String msg) {
   client(jsonLogBuilder(getUnixTimeAsSeconds(), msg));
 }
@@ -116,17 +100,6 @@ void setup() {
   Serial.println(WiFi.localIP());
   logger(String(WiFi.localIP()));
 
-  // API仕様上NTPサーバは3個まで指定できるようですが、実際には最初の1個だけが有効だと思われます。
-  // https://garretlab.web.fc2.com/arduino/esp32/reference/cores/time/configTime.html
-  // configTime(JST, 0, "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
-
-  // Serial.print("[NTP Svr] Connecting.");
-
-  // while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET) {
-  //   Serial.print(".");
-  //   delay(1000);  // １秒毎にリトライ
-  // }
-
   initializeTime();
 
   sensor.begin(&Serial2);
@@ -140,7 +113,7 @@ void setup() {
 
   Serial.println("Preheating");  // Preheating, 3 minutes
   logger("Preheating");          // Preheating, 3 minutes
-  while (!sensor.isReady()) {
+  while (!sensor.isReady() || !isReadyTime()) {
     Serial.print(".");
     logger(".");
     delay(5000);
