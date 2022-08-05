@@ -1,13 +1,13 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
-#include <Mhz19.h>
 #include <WiFi.h>
 #include <Wire.h>
 
 #include "debug.h"
 #include "env.h"
-#include "src/AE_SHT35/AE_SHT35.h"
+#include "src/sensors/co2/co2.hpp"
+#include "src/sensors/temp_hum/temp_hum.hpp"
 #include "src/utils/time.hpp"
 
 #define JSON String
@@ -17,8 +17,8 @@ const char* password = WIFI_PASS;
 
 String serverName = "http://192.168.11.2:4000/esp32-sensor/";
 
-Mhz19 sensor;
-AE_SHT35 SHT35 = AE_SHT35(0x45);
+CO2 co2;
+TempHum th;
 
 bool client(JSON json) {
   if (WiFi.status() != WL_CONNECTED) {
@@ -84,7 +84,6 @@ void logger(String msg) {
 
 void setup() {
   Serial.begin(115200);
-  Serial2.begin(9600);
 
   WiFi.begin(ssid, password);
   Serial.println("Connecting");
@@ -100,20 +99,13 @@ void setup() {
   Serial.println(WiFi.localIP());
   logger(String(WiFi.localIP()));
 
+  co2.init();
+  th.init();
   initializeTime();
 
-  sensor.begin(&Serial2);
-  sensor.setMeasuringRange(Mhz19MeasuringRange::Ppm_5000);
-  sensor.enableAutoBaseCalibration();
-
-  // SHT35をソフトリセット
-  SHT35.SoftReset();
-  // 内蔵ヒーター 0:OFF 1:ON
-  SHT35.Heater(0);
-
   Serial.println("Preheating");  // Preheating, 3 minutes
-  logger("Preheating");          // Preheating, 3 minutes
-  while (!sensor.isReady() || !isReadyTime()) {
+  logger("Preheating");
+  while (!co2.isReady() || !isReadyTime()) {
     Serial.print(".");
     logger(".");
     delay(5000);
@@ -125,18 +117,16 @@ void setup() {
 
 void loop() {
   if (WiFi.status() == WL_CONNECTED) {
-    SHT35.GetTempHum();
-
-    auto carbonDioxide = sensor.getCarbonDioxide();
+    auto carbonDioxide = co2.get();
     if (carbonDioxide >= 0) {
-      auto temp = String(SHT35.Temperature()) + " [°C], ";
-      auto hum = String(SHT35.Humidity()) + " [%], ";
+      auto temp = String(th.getTemperature()) + " [°C], ";
+      auto hum = String(th.getHumidity()) + " [%], ";
       auto co2 = String(carbonDioxide) + " [ppm]";
       Serial.println(temp + hum + co2);
 
       String output =
           jsonBuilder(getUnixTimeAsSeconds(), carbonDioxide,
-                      SHT35.Temperature() * 100, SHT35.Humidity() * 100);
+                      th.getTemperature() * 100, th.getHumidity() * 100);
       Serial.println(output);
       client(output);
 
