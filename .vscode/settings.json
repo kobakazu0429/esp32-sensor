@@ -1,0 +1,20 @@
+{
+  "files.associations": {
+    ".*rc": "json",
+    "__bit_reference": "cpp",
+    "__hash_table": "cpp",
+    "__split_buffer": "cpp",
+    "array": "cpp",
+    "deque": "cpp",
+    "filesystem": "cpp",
+    "initializer_list": "cpp",
+    "string": "cpp",
+    "string_view": "cpp",
+    "unordered_map": "cpp",
+    "vector": "cpp",
+    "__tree": "cpp",
+    "list": "cpp",
+    "map": "cpp",
+    "unordered_set": "cpp"
+  }
+}
