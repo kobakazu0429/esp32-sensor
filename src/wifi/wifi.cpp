@@ -5,5 +5,5 @@ int WiFiInit() {
 }
 
 bool isWiFiConnected() {
-  return WiFi.status() != WL_CONNECTED;
+  return WiFi.status() == WL_CONNECTED;
 }

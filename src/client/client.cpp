@@ -1,8 +1,7 @@
 #include "client.hpp"
 
 bool clientApiPost(String json) {
-  if (isWiFiConnected()) {
-    // debug("WiFi Disconnected");
+  if (!isWiFiConnected()) {
     return false;
   }
 
@@ -10,9 +9,6 @@ bool clientApiPost(String json) {
   http.begin(API_URL);
   http.addHeader("Content-Type", "application/json");
   int status_code = http.POST(json);
-
-  // debug(json);
-  // debug(status_code);
 
   http.end();
 
